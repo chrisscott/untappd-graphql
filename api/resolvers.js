@@ -1,4 +1,6 @@
+import crypto from 'crypto';
 import rp from 'request-promise';
+import cache from './cache';
 
 const { UNTAPPD_CLIENT_ID, UNTAPPD_CLIENT_SECRET } = process.env;
 const authKeys = {
@@ -6,26 +8,53 @@ const authKeys = {
   client_secret: UNTAPPD_CLIENT_SECRET,
 };
 
+const cacheTTL = 60 * 60 * 24; // default ttl to one day
+
+const GetBreweryInfo = (breweryId) => {
+  const key = crypto.createHash('md5').update(breweryId.toString()).digest('hex');
+  const brewery = cache.get(key);
+
+  if (brewery !== undefined) {
+    return brewery;
+  }
+
+  return rp({
+    uri: `https://api.untappd.com/v4/brewery/info/${breweryId}`,
+    qs: authKeys,
+    json: true,
+  }).then((breweryInfoResult) => {
+    const breweryInfo = [breweryInfoResult.response.brewery];
+    cache.set(key, breweryInfo, cacheTTL);
+
+    return breweryInfo;
+  });
+};
+
 const resolvers = {
   Query: {
     brewerySearchInflated(root, args) {
+      const key = crypto.createHash('md5').update(JSON.stringify(args.q)).digest('hex');
+      const breweryId = cache.get(key);
+
+      if (breweryId !== undefined) {
+        return GetBreweryInfo(breweryId);
+      }
+
       return rp({
         uri: 'https://api.untappd.com/v4/search/brewery',
         qs: Object.assign({}, authKeys, args),
         json: true,
       }).then((searchResult) => {
         const { found, brewery } = searchResult.response;
+
         if (found === 0) {
           return undefined;
         }
 
-        const breweryId = brewery.items[0].brewery.brewery_id;
+        const id = brewery.items[0].brewery.brewery_id;
+        cache.set(key, id, cacheTTL);
 
-        return rp({
-          uri: `https://api.untappd.com/v4/brewery/info/${breweryId}`,
-          qs: authKeys,
-          json: true,
-        }).then(result => [result.response.brewery]);
+        return GetBreweryInfo(id);
       });
     },
     brewerySearch(root, args) {
