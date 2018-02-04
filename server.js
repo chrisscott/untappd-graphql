@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
-import schema from './api/schema';
+import schema from './src';
 
 const port = process.env.PORT || 9090;
 

@@ -59,3 +59,6 @@ typings/
 
 # OS temp files
 .DS_Store
+
+# build dir
+build
