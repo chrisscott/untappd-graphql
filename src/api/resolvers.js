@@ -23,7 +23,7 @@ const GetBreweryInfo = (breweryId) => {
     qs: authKeys,
     json: true,
   }).then((breweryInfoResult) => {
-    const breweryInfo = [breweryInfoResult.response.brewery];
+    const breweryInfo = breweryInfoResult.response.brewery;
     cache.set(key, breweryInfo, cacheTTL);
 
     return breweryInfo;
@@ -34,10 +34,10 @@ const resolvers = {
   Query: {
     brewerySearchInflated(root, args) {
       const key = crypto.createHash('md5').update(JSON.stringify(args.q)).digest('hex');
-      const breweryId = cache.get(key);
+      const breweryIdCached = cache.get(key);
 
-      if (breweryId !== undefined) {
-        return GetBreweryInfo(breweryId);
+      if (breweryIdCached !== undefined) {
+        return GetBreweryInfo(breweryIdCached);
       }
 
       return rp({
