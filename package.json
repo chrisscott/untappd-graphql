@@ -11,7 +11,8 @@
     "start": "babel-node server.js",
     "clean": "rimraf build/*",
     "build": "babel src --out-dir build",
-    "prebuild": "npm run clean"
+    "prebuild": "npm run clean",
+    "prepare": "npm run-script build"
   },
   "dependencies": {
     "apollo-server-express": "1.3.2",
