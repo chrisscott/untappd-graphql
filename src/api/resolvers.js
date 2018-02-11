@@ -8,7 +8,7 @@ const authKeys = {
   client_secret: UNTAPPD_CLIENT_SECRET,
 };
 
-const cacheTTL = 60 * 60 * 24; // default ttl to one day
+const cacheTTL = 60 * 60 * 24 * 7; // default ttl to one week
 
 const GetBreweryInfo = (breweryId) => {
   const key = crypto.createHash('md5').update(breweryId.toString()).digest('hex');
