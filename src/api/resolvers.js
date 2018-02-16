@@ -1,9 +1,7 @@
-import crypto from 'crypto';
 import rp from 'request-promise';
-import cache from './cache';
 
 const { UNTAPPD_CLIENT_ID, UNTAPPD_CLIENT_SECRET } = process.env;
-const authKeys = {
+let authKeys = {
   client_id: UNTAPPD_CLIENT_ID,
   client_secret: UNTAPPD_CLIENT_SECRET,
 };
@@ -21,7 +19,13 @@ const GetBreweryInfo = breweryId =>
 
 const resolvers = {
   Query: {
-    brewerySearchInflated(root, args) {
+    brewerySearchInflated(root, args, context) {
+      if (context.user.data.untappd) {
+        authKeys = {
+          access_token: context.user.data.untappd,
+        };
+      }
+
       return rp({
         uri: 'https://api.untappd.com/v4/search/brewery',
         qs: Object.assign({}, authKeys, args),
@@ -38,7 +42,13 @@ const resolvers = {
         return GetBreweryInfo(id);
       });
     },
-    brewerySearch(root, args) {
+    brewerySearch(root, args, context) {
+      if (context.user.data.untappd) {
+        authKeys = {
+          access_token: context.user.data.untappd,
+        };
+      }
+
       return rp({
         uri: 'https://api.untappd.com/v4/search/brewery',
         qs: Object.assign({}, authKeys, args),
