@@ -4,19 +4,17 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _crypto = require('crypto');
-
-var _crypto2 = _interopRequireDefault(_crypto);
-
 var _requestPromise = require('request-promise');
 
 var _requestPromise2 = _interopRequireDefault(_requestPromise);
 
-var _cache = require('./cache');
+var _crypto = require('crypto');
 
-var _cache2 = _interopRequireDefault(_cache);
+var _crypto2 = _interopRequireDefault(_crypto);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var debug = require('debug')('untappd-graphql');
 
 var _process$env = process.env,
     UNTAPPD_CLIENT_ID = _process$env.UNTAPPD_CLIENT_ID,
@@ -27,14 +25,16 @@ var authKeys = {
   client_secret: UNTAPPD_CLIENT_SECRET
 };
 
-var cacheTTL = 60 * 60 * 24; // default ttl to one day
+var GetBreweryInfo = function GetBreweryInfo(breweryId, cache) {
+  var key = _crypto2.default.createHash('md5').update(JSON.stringify(breweryId)).digest('hex');
 
-var GetBreweryInfo = function GetBreweryInfo(breweryId) {
-  var key = _crypto2.default.createHash('md5').update(breweryId.toString()).digest('hex');
-  var brewery = _cache2.default.get(key);
+  if (cache) {
+    var breweryInfo = cache.get(key);
 
-  if (brewery !== undefined) {
-    return brewery;
+    if (breweryInfo) {
+      debug('GetBreweryInfo: returning cached info %O', breweryInfo);
+      return breweryInfo;
+    }
   }
 
   return (0, _requestPromise2.default)({
@@ -43,7 +43,11 @@ var GetBreweryInfo = function GetBreweryInfo(breweryId) {
     json: true
   }).then(function (breweryInfoResult) {
     var breweryInfo = breweryInfoResult.response.brewery;
-    _cache2.default.set(key, breweryInfo, cacheTTL);
+
+    if (cache) {
+      debug('GetBreweryInfo: caching info %O', breweryInfo);
+      cache.set(key, breweryInfo);
+    }
 
     return breweryInfo;
   });
@@ -51,17 +55,29 @@ var GetBreweryInfo = function GetBreweryInfo(breweryId) {
 
 var resolvers = {
   Query: {
-    brewerySearchInflated: function brewerySearchInflated(root, args) {
-      var key = _crypto2.default.createHash('md5').update(JSON.stringify(args.q)).digest('hex');
-      var breweryIdCached = _cache2.default.get(key);
+    brewerySearchInflated: function brewerySearchInflated(root, args, context) {
+      if (context.user && context.user.data.untappd) {
+        debug('brewerySearchInflated: using client access_token');
+        authKeys = {
+          access_token: context.user.data.untappd
+        };
+      }
 
-      if (breweryIdCached !== undefined) {
-        return GetBreweryInfo(breweryIdCached);
+      var cache = context.cache || false;
+
+      if (cache) {
+        var key = _crypto2.default.createHash('md5').update(JSON.stringify(args.q)).digest('hex');
+        var breweryId = cache.get(key);
+
+        if (breweryId) {
+          debug('brewerySearchInflated: returning cached search result %O', breweryId);
+          return GetBreweryInfo(breweryId, authKeys, context.cache);
+        }
       }
 
       return (0, _requestPromise2.default)({
         uri: 'https://api.untappd.com/v4/search/brewery',
-        qs: Object.assign({}, authKeys, args),
+        qs: Object.assign({}, authKeys, args, context),
         json: true
       }).then(function (searchResult) {
         var _searchResult$respons = searchResult.response,
@@ -74,12 +90,22 @@ var resolvers = {
         }
 
         var id = brewery.items[0].brewery.brewery_id;
-        _cache2.default.set(key, id, cacheTTL);
+        if (cache) {
+          var _key = _crypto2.default.createHash('md5').update(JSON.stringify(args.q)).digest('hex');
+          debug('brewerySearchInflated: caching search result %O', id);
+          cache.set(_key, id);
+        }
 
-        return GetBreweryInfo(id);
+        return GetBreweryInfo(id, cache);
       });
     },
-    brewerySearch: function brewerySearch(root, args) {
+    brewerySearch: function brewerySearch(root, args, context) {
+      if (context.user.data.untappd) {
+        authKeys = {
+          access_token: context.user.data.untappd
+        };
+      }
+
       return (0, _requestPromise2.default)({
         uri: 'https://api.untappd.com/v4/search/brewery',
         qs: Object.assign({}, authKeys, args),
@@ -91,13 +117,7 @@ var resolvers = {
       });
     },
     brewery: function brewery(root, args) {
-      return (0, _requestPromise2.default)({
-        uri: 'https://api.untappd.com/v4/brewery/info/' + args.id,
-        qs: authKeys,
-        json: true
-      }).then(function (result) {
-        return result.response.brewery;
-      });
+      return GetBreweryInfo(args.id);
     }
   }
 };

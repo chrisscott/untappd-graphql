@@ -66,7 +66,7 @@ const typeDefs = `
       q: String!
       offset: Int
       limit: Int
-    ): Brewery
+    ): [Brewery]
     brewery(id: Int!): Brewery
   }
 `;
