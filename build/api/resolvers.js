@@ -16,7 +16,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-var debug = require('debug')('untappd-graphql');
+var debugCache = require('debug')('untappd-graphql:cache');
 var debugApi = require('debug')('untappd-graphql:api');
 
 var _process$env = process.env,
@@ -31,20 +31,23 @@ var authKeys = {
 
 var getResults = function getResults(path, args, context) {
   var cache = context.cache || false;
+  var rateLimitFor = 'app';
   var key = void 0;
 
   if (context.user && context.user.data.untappd) {
-    debug('using client access_token for %s args:%o', path, args);
+    debugCache('using client access_token for %s args:%o', path, args);
+    var access_token = context.user.data.untappd;
     authKeys = {
-      access_token: context.user.data.untappd
+      access_token: access_token
     };
+    rateLimitFor = 'user ' + access_token.slice(8);
   }
 
   if (cache) {
     key = _crypto2.default.createHash('md5').update(JSON.stringify({ path: path, args: args })).digest('hex');
     var cachedResult = cache.get(key);
     if (cachedResult) {
-      debug('using cached result for %s args:%o', path, args);
+      debugCache('using cached result for %s args:%o', path, args);
       return cachedResult;
     }
   }
@@ -52,19 +55,25 @@ var getResults = function getResults(path, args, context) {
   return (0, _requestPromise2.default)({
     uri: UNTAPPD_API_ROOT + '/' + path,
     qs: Object.assign({}, authKeys, args),
-    json: true
+    json: true,
+    resolveWithFullResponse: true
   }).then(function (result) {
-    var response = result.response;
+    var headers = result.headers,
+        response = result.body.response;
+
+
+    debugApi('x-ratelimit-limit for %s: %d', rateLimitFor, headers['x-ratelimit-limit']);
+    debugApi('x-ratelimit-remaining for %s: %d', rateLimitFor, headers['x-ratelimit-remaining']);
 
     if (cache) {
-      debug('caching result for %s args:%o', path, args);
+      debugCache('caching result for %s args:%o', path, args);
       cache.set(key, response);
     }
-    debugApi('API result: %O', result);
+    debugApi('API result: %O', response);
 
     return response;
   }).catch(function (err) {
-    debug('API error for %s args: %o: %s', path, args, err.message);
+    debugApi('API error for %s args: %o: %s', path, args, err.message);
   });
 };
 
