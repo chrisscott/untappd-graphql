@@ -1,66 +1,83 @@
 import rp from 'request-promise';
+import crypto from 'crypto';
+
+const debug = require('debug')('untappd-graphql');
 
 const { UNTAPPD_CLIENT_ID, UNTAPPD_CLIENT_SECRET } = process.env;
+const UNTAPPD_API_ROOT = 'https://api.untappd.com/v4';
 let authKeys = {
   client_id: UNTAPPD_CLIENT_ID,
   client_secret: UNTAPPD_CLIENT_SECRET,
 };
 
-const GetBreweryInfo = breweryId =>
-  rp({
-    uri: `https://api.untappd.com/v4/brewery/info/${breweryId}`,
-    qs: authKeys,
-    json: true,
-  }).then((breweryInfoResult) => {
-    const breweryInfo = breweryInfoResult.response.brewery;
+const getResults = (path, args, context) => {
+  const cache = context.cache || false;
+  let key;
 
-    return breweryInfo;
+  if (context.user && context.user.data.untappd) {
+    debug('using client access_token for %s args:%o', path, args);
+    authKeys = {
+      access_token: context.user.data.untappd,
+    };
+  }
+
+  if (cache) {
+    key = crypto.createHash('md5').update(JSON.stringify({ path, args })).digest('hex');
+    const cachedResult = cache.get(key);
+    if (cachedResult) {
+      debug('using cached result for %s args:%o', path, args);
+      return cachedResult;
+    }
+  }
+
+  return rp({
+    uri: `${UNTAPPD_API_ROOT}/${path}`,
+    qs: Object.assign({}, authKeys, args),
+    json: true,
+  }).then((result) => {
+    // debug('%O', result);
+    const { response } = result;
+    if (cache) {
+      debug('caching result for %s args:%o', path, args);
+      cache.set(key, response);
+    }
+
+    return response;
+  }).catch((err) => {
+    debug('API error for %s args: %o: %s', path, args, err.message);
   });
+};
 
 const resolvers = {
   Query: {
-    brewerySearchInflated(root, args, context) {
-      if (context.user.data.untappd) {
-        authKeys = {
-          access_token: context.user.data.untappd,
-        };
+    async brewerySearchInflated(root, args, context) {
+      let res = await getResults('search/brewery', args, context);
+      const { found, brewery: { items } } = res;
+
+      if (found === 0) {
+        return undefined;
       }
 
-      return rp({
-        uri: 'https://api.untappd.com/v4/search/brewery',
-        qs: Object.assign({}, authKeys, args),
-        json: true,
-      }).then((searchResult) => {
-        const { found, brewery } = searchResult.response;
-
-        if (found === 0) {
-          return undefined;
-        }
-
-        const id = brewery.items[0].brewery.brewery_id;
-
-        return GetBreweryInfo(id);
+      return items.map(async (item) => {
+        const { brewery } = item;
+        res = await getResults(`brewery/info/${brewery.brewery_id}`, {}, context);
+        return res.brewery;
       });
     },
-    brewerySearch(root, args, context) {
-      if (context.user.data.untappd) {
-        authKeys = {
-          access_token: context.user.data.untappd,
-        };
+    async brewerySearch(root, args, context) {
+      const res = await getResults('search/brewery', args, context);
+      const { found, brewery } = res;
+
+      if (found === 0) {
+        return undefined;
       }
 
-      return rp({
-        uri: 'https://api.untappd.com/v4/search/brewery',
-        qs: Object.assign({}, authKeys, args),
-        json: true,
-      }).then(result => result.response.brewery.items.map(item => item.brewery));
+      return brewery.items.map(item => item.brewery);
     },
-    brewery(root, args) {
-      return rp({
-        uri: `https://api.untappd.com/v4/brewery/info/${args.id}`,
-        qs: authKeys,
-        json: true,
-      }).then(result => result.response.brewery);
+    async brewery(root, args, context) {
+      const res = await getResults(`brewery/info/${args.id}`, {}, context);
+
+      return res.brewery;
     },
   },
 };
