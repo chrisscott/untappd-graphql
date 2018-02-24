@@ -13,13 +13,16 @@ let authKeys = {
 
 const getResults = (path, args, context) => {
   const cache = context.cache || false;
+  let rateLimitFor = 'app';
   let key;
 
   if (context.user && context.user.data.untappd) {
     debugCache('using client access_token for %s args:%o', path, args);
+    const access_token = context.user.data.untappd;
     authKeys = {
-      access_token: context.user.data.untappd,
+      access_token,
     };
+    rateLimitFor = `user ${access_token.slice(8)}`;
   }
 
   if (cache) {
@@ -35,13 +38,18 @@ const getResults = (path, args, context) => {
     uri: `${UNTAPPD_API_ROOT}/${path}`,
     qs: Object.assign({}, authKeys, args),
     json: true,
+    resolveWithFullResponse: true,
   }).then((result) => {
-    const { response } = result;
+    const { headers, body: { response } } = result;
+
+    debugApi('x-ratelimit-limit for %s: %d', rateLimitFor, headers['x-ratelimit-limit']);
+    debugApi('x-ratelimit-remaining for %s: %d', rateLimitFor, headers['x-ratelimit-remaining']);
+
     if (cache) {
       debugCache('caching result for %s args:%o', path, args);
       cache.set(key, response);
     }
-    debugApi('API result: %O', result);
+    debugApi('API result: %O', response);
 
     return response;
   }).catch((err) => {
