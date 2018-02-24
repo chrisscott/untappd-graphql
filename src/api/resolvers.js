@@ -1,7 +1,7 @@
 import rp from 'request-promise';
 import crypto from 'crypto';
 
-const debug = require('debug')('untappd-graphql');
+const debugCache = require('debug')('untappd-graphql:cache');
 const debugApi = require('debug')('untappd-graphql:api');
 
 const { UNTAPPD_CLIENT_ID, UNTAPPD_CLIENT_SECRET } = process.env;
@@ -16,7 +16,7 @@ const getResults = (path, args, context) => {
   let key;
 
   if (context.user && context.user.data.untappd) {
-    debug('using client access_token for %s args:%o', path, args);
+    debugCache('using client access_token for %s args:%o', path, args);
     authKeys = {
       access_token: context.user.data.untappd,
     };
@@ -26,7 +26,7 @@ const getResults = (path, args, context) => {
     key = crypto.createHash('md5').update(JSON.stringify({ path, args })).digest('hex');
     const cachedResult = cache.get(key);
     if (cachedResult) {
-      debug('using cached result for %s args:%o', path, args);
+      debugCache('using cached result for %s args:%o', path, args);
       return cachedResult;
     }
   }
@@ -38,14 +38,14 @@ const getResults = (path, args, context) => {
   }).then((result) => {
     const { response } = result;
     if (cache) {
-      debug('caching result for %s args:%o', path, args);
+      debugCache('caching result for %s args:%o', path, args);
       cache.set(key, response);
     }
     debugApi('API result: %O', result);
 
     return response;
   }).catch((err) => {
-    debug('API error for %s args: %o: %s', path, args, err.message);
+    debugApi('API error for %s args: %o: %s', path, args, err.message);
   });
 };
 
