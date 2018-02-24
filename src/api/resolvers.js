@@ -2,7 +2,7 @@ import rp from 'request-promise';
 import crypto from 'crypto';
 
 const debug = require('debug')('untappd-graphql');
-const info = require('debug')('untappd-graphql:info');
+const debugApi = require('debug')('untappd-graphql:api');
 
 const { UNTAPPD_CLIENT_ID, UNTAPPD_CLIENT_SECRET } = process.env;
 const UNTAPPD_API_ROOT = 'https://api.untappd.com/v4';
@@ -41,7 +41,7 @@ const getResults = (path, args, context) => {
       debug('caching result for %s args:%o', path, args);
       cache.set(key, response);
     }
-    info('API response: %O', response);
+    debugApi('API result: %O', result);
 
     return response;
   }).catch((err) => {
