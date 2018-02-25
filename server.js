@@ -16,13 +16,14 @@ if (!process.env.UNTAPPD_CLIENT_ID || !process.env.UNTAPPD_CLIENT_SECRET) {
 // Initialize the app
 const app = express();
 
-// The GraphQL endpoint
+// Cache in memory
 const context = {
   cache: new NodeCache({
-    stdTTL: 60 * 60 * 24 * 7,
+    stdTTL: 60 * 60 * 24 * 7, // cache for one week
   }),
 };
 
+// The GraphQL endpoint
 app.use('/graphql', bodyParser.json(), graphqlExpress({ schema, context }));
 
 // GraphiQL, a visual editor for queries
