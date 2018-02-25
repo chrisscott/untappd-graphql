@@ -186,7 +186,7 @@ var resolvers = {
 
       return brewerySearch;
     }(),
-    brewery: function () {
+    breweryInfo: function () {
       var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(root, args, context) {
         var res;
         return regeneratorRuntime.wrap(function _callee4$(_context4) {
@@ -208,11 +208,11 @@ var resolvers = {
         }, _callee4, this);
       }));
 
-      function brewery(_x8, _x9, _x10) {
+      function breweryInfo(_x8, _x9, _x10) {
         return _ref4.apply(this, arguments);
       }
 
-      return brewery;
+      return breweryInfo;
     }()
   }
 };
