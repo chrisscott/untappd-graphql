@@ -8,7 +8,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "babel-node server.js",
+    "start": "babel-node example-server.js",
     "clean": "rimraf build/*",
     "build": "babel src --out-dir build",
     "prebuild": "npm run-script clean",
@@ -21,9 +21,9 @@
     "express": "4.16.2",
     "graphql": "0.12.3",
     "graphql-tools": "2.19.0",
-    "node-cache": "^4.1.1",
+    "node-cache": "4.1.1",
     "request-promise": "4.2.2",
-    "supports-color": "^5.2.0"
+    "supports-color": "5.2.0"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
