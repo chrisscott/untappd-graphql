@@ -5,8 +5,8 @@
 ## Features
 
 * __a GraphQL server__ that delegates to the [Untappd API](https://untappd.com/api/)
-* __caching__ of Untappd API results
-* exports for __[schema stitching](https://www.apollographql.com/docs/graphql-tools/schema-stitching.html)__ into your project
+* optional __caching__ of Untappd API results
+* exports for __use in your own project__
 
 ## Prerequisites
 
@@ -17,47 +17,36 @@ You will need an approved [Untappd API](https://untappd.com/api/) app and the fo
 
 ## API Endpoints Implemented
 
-The following are currently implemented as GraphQL Queries. If you'd like to see others, please add an issue (or, even better, submit a PR that implements them).
+The following are currently implemented. If you'd like to see others, please add an issue (or, even better, submit a PR that implements them).
 
-* [Brewery Search](https://untappd.com/api/docs#brewerysearch) (`brewerySearch`)
-* [Brewery Info](https://untappd.com/api/docs#breweryinfo) (`brewery`)
+### Queries
 
-### Enhancements
+#### Info / Search
 
-The following Queries have been added for convenience:
-
-* `brewerySearchInflated`: the results of `brewerySearch` inflated with `brewery`. Note that this still requires an API call for every brewery returned by `brewerySearch`. If you plan on using this, you should cache the results.
+* [Brewery Search](https://untappd.com/api/docs#brewerysearch) - (`brewerySearch`)
+ * A convenience query, `brewerySearchInflated`, provides the results of `brewerySearch` inflated with `breweryInfo` for each brewery returned by `brewerySearch`. Since this requires an API call for every brewery you should use caching if using this.
+* [Brewery Info](https://untappd.com/api/docs#breweryinfo) - (`breweryInfo`)
 
 ## Running the GraphQL server
 
-### Requirements
+### Configuration
 
 The following environment variables must be set:
 
 * `UNTAPPD_CLIENT_ID`: the Client ID from your Untappd app
 * `UNTAPPD_CLIENT_SECRET`: the Client Secret from your Untappd app
-* `JWT_SECRET` (optional): if you are using user [authentication](https://untappd.com/api/docs#authentication) (see below) this secret is used to encrypt and decrypt the JSON web token used to store the authenticated user's Untappd `access_token`. This secret will need to be the same used in the app calling the API.
+* `JWT_SECRET` (optional): if you are using Untappd user [authentication](https://untappd.com/api/docs#authentication) (see below) this secret is used to encrypt and decrypt the JSON web token used to store the authenticated user's Untappd `access_token`. This secret will need to be the same used in the app calling the API.
 
-### Running the Server
+### Running the Example Server
 
 `npm start`
 
-This will run the following endpoints on the `PORT` environment variable if defined (or `9090` if not) on the local host.
+This will run the following endpoints on the local host on the `PORT` environment variable, if defined. Defaults to port `9090`.
 
-* `/graphql`: the GraphQL server
-* `/graphiql` in non-production environments: the GraphiQL interface
+* `/graphql` - the GraphQL server
+* `/graphiql` - the GraphiQL interface (only available when `NODE_ENV` is not `production`)
 
-
-## Caching
-
-To cache the API results from Untappd pass in a `cache` object as a property of `context` that supports the following function signatures (such as [`node-cache`](https://www.npmjs.com/package/node-cache)):
-
-* `get(key)`
-* `set(key, value)`
-
-__Caching is recommended, especially if using the `brewerySearchInflated` Query since it requires one API call for the search and one for each `Brewery` returned.__
-
-For an example using `node-cache` as an in-memory cache with `apollo-server-express` see [`server.js`](./server.js).
+In-memory caching (see below) is enabled on the example server.
 
 ## User Authentication
 
@@ -94,7 +83,7 @@ const header = `authorization: Bearer ${jwt}`;
 ...do request, process results, etc...
 ```
 
-## Schema Stitching
+## Using in Your Own Project
 
 This module exports the following for use in your GraphQL project:
 
@@ -102,13 +91,15 @@ This module exports the following for use in your GraphQL project:
 * Resolvers: `resolvers`
 * An executable schema: `schema`
 
-For example, you could use the following in your own GraphQL server (see [`server.js`](./server.js) for usage):
+For example, you could use the `typeDefs` and `resolvers` to make an executable schema for you own GraphQL server (see [`server.js`](./server.js)) or for [schema stitching](https://www.apollographql.com/docs/graphql-tools/schema-stitching.html) it with another schema.
 
-```
-import { typeDefs as untappdTypeDefs, resolvers as untappdResolvers } from 'untappd-graphql';
+### Caching
 
-const untappdExecutableSchema = makeExecutableSchema({
-  typeDefs: untappdTypeDefs,
-  resolvers: untappdResolvers,
-});
-```
+To cache the API results from Untappd pass in a `cache` object as a property of `context` that supports the following function signatures (such as [`node-cache`](https://www.npmjs.com/package/node-cache)):
+
+* `get(key)`
+* `set(key, value)`
+
+__Caching is recommended, especially if using the `brewerySearchInflated` Query since it requires one API call for the search and one for each `Brewery` returned.__
+
+For an example using `node-cache` as an in-memory cache with `apollo-server-express` see [`server.js`](./server.js).

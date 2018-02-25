@@ -67,7 +67,7 @@ const typeDefs = `
       offset: Int
       limit: Int
     ): [Brewery]
-    brewery(id: Int!): Brewery
+    breweryInfo(id: Int!): Brewery
   }
 `;
 
