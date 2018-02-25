@@ -83,7 +83,7 @@ const resolvers = {
 
       return brewery.items.map(item => item.brewery);
     },
-    async brewery(root, args, context) {
+    async breweryInfo(root, args, context) {
       const res = await getResults(`brewery/info/${args.id}`, {}, context);
 
       return res.brewery;
