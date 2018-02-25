@@ -28,7 +28,7 @@ The following Queries have been added for convenience:
 
 * `brewerySearchInflated`: the results of `brewerySearch` inflated with `brewery`. Note that this still requires an API call for every brewery returned by `brewerySearch`. If you plan on using this, you should cache the results.
 
-## Running a GraphQL server
+## Running the GraphQL server
 
 ### Requirements
 
@@ -42,8 +42,11 @@ The following environment variables must be set:
 
 `npm start`
 
-This will run GraphQL (`/graphql`) (and GraphiQL (`/graphiql`) in non-production environments) endpoints on the
-`PORT` environment variable if defined, or `9090` if not.
+This will run the following endpoints on the `PORT` environment variable if defined (or `9090` if not) on the local host.
+
+* `/graphql`: the GraphQL server
+* `/graphiql` in non-production environments: the GraphiQL interface
+
 
 ## Caching
 
@@ -54,7 +57,7 @@ To cache the API results from Untappd pass in a `cache` object as a property of 
 
 __Caching is recommended, especially if using the `brewerySearchInflated` Query since it requires one API call for the search and one for each `Brewery` returned.__
 
-For an example using `node-cache` as an in-memory cache with `apollo-server-express` see [`server.js`](./blob/master/server.js).
+For an example using `node-cache` as an in-memory cache with `apollo-server-express` see [`server.js`](./server.js).
 
 ## User Authentication
 
@@ -99,7 +102,7 @@ This module exports the following for use in your GraphQL project:
 * Resolvers: `resolvers`
 * An executable schema: `schema`
 
-For example, you could use the following in your own GraphQL server (see [`server.js`](./blob/master/server.js) for usage):
+For example, you could use the following in your own GraphQL server (see [`server.js`](./server.js) for usage):
 
 ```
 import { typeDefs as untappdTypeDefs, resolvers as untappdResolvers } from 'untappd-graphql';
