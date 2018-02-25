@@ -1,6 +1,6 @@
 # GraphQL for the Untappd API
 
-`npm install https://github.com/chrisscott/untappd-graphql.git`
+`npm install untappd-graphql`
 
 ## Features
 
