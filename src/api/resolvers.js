@@ -63,7 +63,7 @@ const getResults = (path, args, context) => {
         cache.set(key, data);
       }
 
-      return response;
+      return data;
     })
     .catch((error) => {
       const { response: { data, status, headers } } = error;
@@ -85,7 +85,7 @@ const resolvers = {
   Query: {
     async brewerySearchInflated(root, args, context) {
       let res = await getResults('search/brewery', args, context);
-      const { found, brewery: { items } } = res.data.response;
+      const { found, brewery: { items } } = res.response;
 
       if (found === 0) {
         return undefined;
@@ -94,12 +94,12 @@ const resolvers = {
       return items.map(async (item) => {
         const { brewery } = item;
         res = await getResults(`brewery/info/${brewery.brewery_id}`, {}, context);
-        return res.data.response.brewery;
+        return res.response.brewery;
       });
     },
     async brewerySearch(root, args, context) {
       const res = await getResults('search/brewery', args, context);
-      const { found, brewery: { items } } = res.data.response;
+      const { found, brewery: { items } } = res.response;
 
       if (found === 0) {
         return undefined;
@@ -109,7 +109,7 @@ const resolvers = {
     },
     async breweryInfo(root, args, context) {
       const res = await getResults(`brewery/info/${args.id}`, {}, context);
-      return res.data.response.brewery;
+      return res.response.brewery;
     },
   },
 };

@@ -96,7 +96,7 @@ var getResults = function getResults(path, args, context) {
       cache.set(key, data);
     }
 
-    return response;
+    return data;
   }).catch(function (error) {
     var _error$response = error.response,
         data = _error$response.data,
@@ -123,7 +123,7 @@ var resolvers = {
       var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(root, args, context) {
         var _this2 = this;
 
-        var res, _res$data$response, found, items;
+        var res, _res$response, found, items;
 
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
@@ -134,7 +134,7 @@ var resolvers = {
 
               case 2:
                 res = _context2.sent;
-                _res$data$response = res.data.response, found = _res$data$response.found, items = _res$data$response.brewery.items;
+                _res$response = res.response, found = _res$response.found, items = _res$response.brewery.items;
 
                 if (!(found === 0)) {
                   _context2.next = 6;
@@ -157,7 +157,7 @@ var resolvers = {
 
                           case 3:
                             res = _context.sent;
-                            return _context.abrupt('return', res.data.response.brewery);
+                            return _context.abrupt('return', res.response.brewery);
 
                           case 5:
                           case 'end':
@@ -188,7 +188,7 @@ var resolvers = {
     }(),
     brewerySearch: function () {
       var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(root, args, context) {
-        var res, _res$data$response2, found, items;
+        var res, _res$response2, found, items;
 
         return regeneratorRuntime.wrap(function _callee3$(_context3) {
           while (1) {
@@ -199,7 +199,7 @@ var resolvers = {
 
               case 2:
                 res = _context3.sent;
-                _res$data$response2 = res.data.response, found = _res$data$response2.found, items = _res$data$response2.brewery.items;
+                _res$response2 = res.response, found = _res$response2.found, items = _res$response2.brewery.items;
 
                 if (!(found === 0)) {
                   _context3.next = 6;
@@ -239,7 +239,7 @@ var resolvers = {
 
               case 2:
                 res = _context4.sent;
-                return _context4.abrupt('return', res.data.response.brewery);
+                return _context4.abrupt('return', res.response.brewery);
 
               case 4:
               case 'end':
