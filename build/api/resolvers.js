@@ -88,7 +88,7 @@ var getResults = function getResults(path, args, context) {
 
 
     debugApi('x-ratelimit-remaining for %s: %d', rateLimitFor, headers['x-ratelimit-remaining']);
-    debugApi('reveived result for %s args:%o', path, args);
+    debugApi('received result for %s args:%o', path, args);
     debugApiVerbose('API result: %O', data);
 
     if (cache) {
