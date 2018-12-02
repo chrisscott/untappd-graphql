@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
 import NodeCache from 'node-cache';
 import { schema } from './src';
 
@@ -13,9 +13,6 @@ if (!process.env.UNTAPPD_CLIENT_ID || !process.env.UNTAPPD_CLIENT_SECRET) {
   process.exit(1);
 }
 
-// Initialize the app
-const app = express();
-
 // Cache in memory
 const context = {
   cache: new NodeCache({
@@ -23,20 +20,17 @@ const context = {
   }),
 };
 
-// The GraphQL endpoint
-app.use('/graphql', bodyParser.json(), graphqlExpress(
-  {
-    schema,
-    context,
-    formatError: (err) => {
-      const { status, message } = err.originalError;
-      return { status, message };
-    },
-  }
-));
+const server = new ApolloServer({
+  schema,
+  context,
+  formatError: (err) => {
+    const { status, message } = err.originalError;
+    return { status, message };
+  },
+});
 
-// GraphiQL, a visual editor for queries
-app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
+const app = express();
+server.applyMiddleware({ app });
 
 // Start the server
 app.listen(port, () => {
