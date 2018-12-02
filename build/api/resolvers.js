@@ -4,20 +4,33 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _requestPromise = require('request-promise');
+var _axios = require('axios');
 
-var _requestPromise2 = _interopRequireDefault(_requestPromise);
+var _axios2 = _interopRequireDefault(_axios);
 
 var _crypto = require('crypto');
 
 var _crypto2 = _interopRequireDefault(_crypto);
 
+var _bluebird = require('bluebird');
+
+var _bluebird2 = _interopRequireDefault(_bluebird);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new _bluebird2.default(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return _bluebird2.default.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+global.Promise = _bluebird2.default;
 
 var debugCache = require('debug')('untappd-graphql:cache');
 var debugApi = require('debug')('untappd-graphql:api');
+var debugApiVerbose = require('debug')('untappd-graphql:api:verbose');
 
 var _process$env = process.env,
     UNTAPPD_CLIENT_ID = _process$env.UNTAPPD_CLIENT_ID,
@@ -29,13 +42,30 @@ var authKeys = {
   client_secret: UNTAPPD_CLIENT_SECRET
 };
 
+var AppError = function (_Error) {
+  _inherits(AppError, _Error);
+
+  function AppError(opts) {
+    _classCallCheck(this, AppError);
+
+    var _this = _possibleConstructorReturn(this, (AppError.__proto__ || Object.getPrototypeOf(AppError)).call(this, opts.message));
+
+    _this.status = opts.status;
+    return _this;
+  }
+
+  return AppError;
+}(Error);
+
 var getResults = function getResults(path, args, context) {
   var cache = context.cache || false;
   var rateLimitFor = 'app';
   var key = void 0;
 
+  debugApi('getting results for %s args:%o', path, args);
+
   if (context.user && context.user.data.untappd) {
-    debugCache('using client access_token for %s args:%o', path, args);
+    debugApi('using client access_token for %s args:%o', path, args);
     var access_token = context.user.data.untappd;
     authKeys = {
       access_token: access_token
@@ -52,28 +82,38 @@ var getResults = function getResults(path, args, context) {
     }
   }
 
-  return (0, _requestPromise2.default)({
-    uri: UNTAPPD_API_ROOT + '/' + path,
-    qs: Object.assign({}, authKeys, args),
-    json: true,
-    resolveWithFullResponse: true
-  }).then(function (result) {
-    var headers = result.headers,
-        response = result.body.response;
+  return _axios2.default.get(UNTAPPD_API_ROOT + '/' + path, { params: Object.assign({}, authKeys, args) }).bind(debugApi, debugCache, debugApiVerbose).then(function (response) {
+    var headers = response.headers,
+        data = response.data;
 
 
-    debugApi('x-ratelimit-limit for %s: %d', rateLimitFor, headers['x-ratelimit-limit']);
     debugApi('x-ratelimit-remaining for %s: %d', rateLimitFor, headers['x-ratelimit-remaining']);
+    debugApi('received result for %s args:%o', path, args);
+    debugApiVerbose('API result: %O', data);
 
     if (cache) {
       debugCache('caching result for %s args:%o', path, args);
-      cache.set(key, response);
+      cache.set(key, data);
     }
-    debugApi('API result: %O', response);
 
-    return response;
-  }).catch(function (err) {
-    debugApi('API error for %s args: %o: %s', path, args, err.message);
+    return data;
+  }).catch(function (error) {
+    var _error$response = error.response,
+        data = _error$response.data,
+        status = _error$response.status,
+        headers = _error$response.headers;
+
+
+    debugApi('x-ratelimit-remaining for %s: %d', rateLimitFor, headers['x-ratelimit-remaining']);
+    debugApi('API error: %s', error);
+
+    var message = data;
+
+    if (data.meta) {
+      message = data.meta.error_detail;
+    }
+
+    throw new AppError({ message: message, status: status });
   });
 };
 
@@ -81,9 +121,9 @@ var resolvers = {
   Query: {
     brewerySearchInflated: function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(root, args, context) {
-        var _this = this;
+        var _this2 = this;
 
-        var res, _res, found, items;
+        var res, _res$response, found, items;
 
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
@@ -94,7 +134,7 @@ var resolvers = {
 
               case 2:
                 res = _context2.sent;
-                _res = res, found = _res.found, items = _res.brewery.items;
+                _res$response = res.response, found = _res$response.found, items = _res$response.brewery.items;
 
                 if (!(found === 0)) {
                   _context2.next = 6;
@@ -117,14 +157,14 @@ var resolvers = {
 
                           case 3:
                             res = _context.sent;
-                            return _context.abrupt('return', res.brewery);
+                            return _context.abrupt('return', res.response.brewery);
 
                           case 5:
                           case 'end':
                             return _context.stop();
                         }
                       }
-                    }, _callee, _this);
+                    }, _callee, _this2);
                   }));
 
                   return function (_x4) {
@@ -148,7 +188,8 @@ var resolvers = {
     }(),
     brewerySearch: function () {
       var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(root, args, context) {
-        var res, found, brewery;
+        var res, _res$response2, found, items;
+
         return regeneratorRuntime.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
@@ -158,7 +199,7 @@ var resolvers = {
 
               case 2:
                 res = _context3.sent;
-                found = res.found, brewery = res.brewery;
+                _res$response2 = res.response, found = _res$response2.found, items = _res$response2.brewery.items;
 
                 if (!(found === 0)) {
                   _context3.next = 6;
@@ -168,7 +209,7 @@ var resolvers = {
                 return _context3.abrupt('return', undefined);
 
               case 6:
-                return _context3.abrupt('return', brewery.items.map(function (item) {
+                return _context3.abrupt('return', items.map(function (item) {
                   return item.brewery;
                 }));
 
@@ -198,7 +239,7 @@ var resolvers = {
 
               case 2:
                 res = _context4.sent;
-                return _context4.abrupt('return', res.brewery);
+                return _context4.abrupt('return', res.response.brewery);
 
               case 4:
               case 'end':
