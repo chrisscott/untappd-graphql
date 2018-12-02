@@ -30,6 +30,7 @@ global.Promise = _bluebird2.default;
 
 var debugCache = require('debug')('untappd-graphql:cache');
 var debugApi = require('debug')('untappd-graphql:api');
+var debugApiVerbose = require('debug')('untappd-graphql:api:verbose');
 
 var _process$env = process.env,
     UNTAPPD_CLIENT_ID = _process$env.UNTAPPD_CLIENT_ID,
@@ -81,13 +82,14 @@ var getResults = function getResults(path, args, context) {
     }
   }
 
-  return _axios2.default.get(UNTAPPD_API_ROOT + '/' + path, { params: Object.assign({}, authKeys, args) }).bind(debugApi, debugCache).then(function (response) {
+  return _axios2.default.get(UNTAPPD_API_ROOT + '/' + path, { params: Object.assign({}, authKeys, args) }).bind(debugApi, debugCache, debugApiVerbose).then(function (response) {
     var headers = response.headers,
         data = response.data;
 
 
     debugApi('x-ratelimit-remaining for %s: %d', rateLimitFor, headers['x-ratelimit-remaining']);
-    //debugApi('API result: %O', data);
+    debugApi('reveived result for %s args:%o', path, args);
+    debugApiVerbose('API result: %O', data);
 
     if (cache) {
       debugCache('caching result for %s args:%o', path, args);

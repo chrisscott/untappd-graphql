@@ -6,6 +6,7 @@ global.Promise = Promise;
 
 const debugCache = require('debug')('untappd-graphql:cache');
 const debugApi = require('debug')('untappd-graphql:api');
+const debugApiVerbose = require('debug')('untappd-graphql:api:verbose');
 
 const { UNTAPPD_CLIENT_ID, UNTAPPD_CLIENT_SECRET } = process.env;
 const UNTAPPD_API_ROOT = 'https://api.untappd.com/v4';
@@ -50,11 +51,12 @@ const getResults = (path, args, context) => {
     `${UNTAPPD_API_ROOT}/${path}`,
     { params: Object.assign({}, authKeys, args) },
   )
-    .bind(debugApi, debugCache).then((response) => {
+    .bind(debugApi, debugCache, debugApiVerbose).then((response) => {
       const { headers, data } = response;
 
       debugApi('x-ratelimit-remaining for %s: %d', rateLimitFor, headers['x-ratelimit-remaining']);
-      //debugApi('API result: %O', data);
+      debugApi('reveived result for %s args:%o', path, args);
+      debugApiVerbose('API result: %O', data);
 
       if (cache) {
         debugCache('caching result for %s args:%o', path, args);
