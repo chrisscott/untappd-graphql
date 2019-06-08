@@ -12,7 +12,8 @@
     "clean": "rimraf build/*",
     "build": "babel src --out-dir build",
     "prebuild": "npm run-script clean",
-    "prepare": "npm run-script build"
+    "prepare": "npm run-script build",
+    "release": "release-it"
   },
   "dependencies": {
     "apollo-server-express": "2.2.5",
