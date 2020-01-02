@@ -30,12 +30,14 @@ const getResults = (path, args, context) => {
   debugApi('getting results for %s args:%o', path, args);
 
   if (context.user && context.user.data.untappd) {
-    debugApi('using client access_token for %s args:%o', path, args);
+    debugApi('using client access_token for authorization for %s args:%o', path, args);
     const access_token = context.user.data.untappd;
     authKeys = {
       access_token,
     };
     rateLimitFor = `user ${access_token.slice(8)}`;
+  } else {
+    debugApi('using client ID and secret for authorization');
   }
 
   if (cache) {
