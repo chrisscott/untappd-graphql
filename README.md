@@ -35,7 +35,6 @@ The following environment variables must be set:
 
 * `UNTAPPD_CLIENT_ID`: the Client ID from your Untappd app
 * `UNTAPPD_CLIENT_SECRET`: the Client Secret from your Untappd app
-* `JWT_SECRET` (optional): if you are using Untappd user [authentication](https://untappd.com/api/docs#authentication) (see below) this secret is used to encrypt and decrypt the JSON web token used to store the authenticated user's Untappd `access_token`. This secret will need to be the same used in the app calling the API.
 
 ### Running the Example Server
 
@@ -52,36 +51,7 @@ In-memory caching (see below) is enabled on the example server.
 
 To use an Untappd user's API limits instead of your app's limits, you can [authenticate](https://untappd.com/api/docs#authentication) the user and pass their `access_token` to the API.
 
-To do this, set an `authorization` header using Bearer auth with a JSON Web Token when calling the GraphQL server. The token *must* have following format and be encrypted with the `JWT_SECRET` noted above:
-
-```
-const access_token = ... // access_token from server- or client-side authentication of the user to Untappd
-{
-  data: {
-    untappd: access_token,
-  },
-},
-```
-
-For example, using `jsonwebtoken` to create the JWT in the app calling the GraphQL endpoint:
-
-```
-import jsonwebtoken from 'jsonwebtoken';
-
-const jwt = jsonwebtoken.sign(
-  {
-    data: {
-      untappd: access_token,
-    },
-  },
-  process.env.JWT_SECRET,
-);
-
-const header = `authorization: Bearer ${jwt}`;
-
-// then pass the authorization header when calling the GraphQL endpoint
-...do request, process results, etc...
-```
+To do this, set `user.data.untappd` on the `context` property to the user's Untappd access token when creating the GraphQL server. 
 
 ## Using in Your Own Project
 
@@ -95,7 +65,7 @@ For example, you could use the `typeDefs` and `resolvers` to make an executable 
 
 ### Caching
 
-To cache the API results from Untappd pass in a `cache` object as a property of `context` that supports the following function signatures (such as [`node-cache`](https://www.npmjs.com/package/node-cache)):
+To cache the API results from Untappd pass in a `cache` object as a property of `context` when creating the GraphQL server. The cache must support the following function signatures (such as [`node-cache`](https://www.npmjs.com/package/node-cache)):
 
 * `get(key)`
 * `set(key, value)`
