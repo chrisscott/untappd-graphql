@@ -58,6 +58,11 @@ const getResults = (path, args, context) => {
       debugApi('received result for %s args:%o', path, args);
       debugApiVerbose('API result: %O', data);
 
+      if (headers['x-ratelimit-remaining'] === 0) {
+        debugApi('rate limit met, returning with no data');
+        return {found: 0};
+      }
+
       if (cache) {
         debugCache('caching result for %s args:%o', path, args);
         cache.set(key, data);
@@ -85,7 +90,7 @@ const resolvers = {
   Query: {
     async brewerySearchInflated(root, args, context) {
       let res = await getResults('search/brewery', args, context);
-      const { found, brewery: { items } } = res.response;
+      const { found, brewery: { items = [] } } = res.response;
 
       if (found === 0) {
         return undefined;
