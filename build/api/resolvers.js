@@ -81,12 +81,14 @@ var getResults = function getResults(path, args, context) {
   debugApi('getting results for %s args:%o', path, args);
 
   if (context.user && context.user.data.untappd) {
-    debugApi('using client access_token for %s args:%o', path, args);
+    debugApi('using client access_token for authorization for %s args:%o', path, args);
     var access_token = context.user.data.untappd;
     authKeys = {
       access_token: access_token
     };
     rateLimitFor = "user ".concat(access_token.slice(8));
+  } else {
+    debugApi('using client ID and secret for authorization');
   }
 
   if (cache) {
@@ -103,13 +105,23 @@ var getResults = function getResults(path, args, context) {
   }
 
   return _axios["default"].get("".concat(UNTAPPD_API_ROOT, "/").concat(path), {
-    params: Object.assign({}, authKeys, args)
+    params: Object.assign({}, authKeys, args),
+    headers: {
+      'User-Agent': "untappd-graphql (".concat(UNTAPPD_CLIENT_ID, ")")
+    }
   }).bind(debugApi, debugCache, debugApiVerbose).then(function (response) {
     var headers = response.headers,
         data = response.data;
     debugApi('x-ratelimit-remaining for %s: %d', rateLimitFor, headers['x-ratelimit-remaining']);
     debugApi('received result for %s args:%o', path, args);
     debugApiVerbose('API result: %O', data);
+
+    if (headers['x-ratelimit-remaining'] === 0) {
+      debugApi('rate limit met, returning with no data');
+      return {
+        found: 0
+      };
+    }
 
     if (cache) {
       debugCache('caching result for %s args:%o', path, args);
@@ -143,7 +155,7 @@ var resolvers = {
       var _brewerySearchInflated = _asyncToGenerator(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee2(root, args, context) {
-        var res, _res$response, found, items;
+        var res, _res$response, found, _res$response$brewery, items;
 
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
@@ -154,7 +166,7 @@ var resolvers = {
 
               case 2:
                 res = _context2.sent;
-                _res$response = res.response, found = _res$response.found, items = _res$response.brewery.items;
+                _res$response = res.response, found = _res$response.found, _res$response$brewery = _res$response.brewery.items, items = _res$response$brewery === void 0 ? [] : _res$response$brewery;
 
                 if (!(found === 0)) {
                   _context2.next = 6;
