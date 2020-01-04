@@ -51,7 +51,10 @@ const getResults = (path, args, context) => {
 
   return axios.get(
     `${UNTAPPD_API_ROOT}/${path}`,
-    { params: Object.assign({}, authKeys, args) },
+    { 
+      params: Object.assign({}, authKeys, args),
+      headers: {'User-Agent': `untappd-graphql (${UNTAPPD_CLIENT_ID})`},
+    },
   )
     .bind(debugApi, debugCache, debugApiVerbose).then((response) => {
       const { headers, data } = response;
