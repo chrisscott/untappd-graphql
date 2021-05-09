@@ -1,5 +1,4 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import { ApolloServer } from 'apollo-server-express';
 import NodeCache from 'node-cache';
 import { schema } from './src';
@@ -13,26 +12,31 @@ if (!process.env.UNTAPPD_CLIENT_ID || !process.env.UNTAPPD_CLIENT_SECRET) {
   process.exit(1);
 }
 
-// Cache in memory
-const context = {
-  cache: new NodeCache({
-    stdTTL: 60 * 60 * 24 * 7, // cache for one week
-  }),
-};
+async function startServer() {
 
-const server = new ApolloServer({
-  schema,
-  context,
-  formatError: (err) => {
-    const { status, message } = err.originalError;
-    return { status, message };
-  },
-});
+  // Cache in memory
+  const context = {
+    cache: new NodeCache({
+      stdTTL: 60 * 60 * 24 * 7, // cache for one week
+    }),
+  };
 
-const app = express();
-server.applyMiddleware({ app });
+  const server = new ApolloServer({
+    schema,
+    context,
+    formatError: (err) => {
+      const { status, message } = err.originalError;
+      return { status, message };
+    },
+  });
 
-// Start the server
-app.listen(port, () => {
+  const app = express();
+  server.applyMiddleware({ app });
+
+  // Start the server
+  await new Promise(resolve => app.listen({ port }, resolve));
+  console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
   debug(`Go to http://localhost:${port}/graphiql to run queries!`);
-});
+}
+
+startServer();
