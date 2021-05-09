@@ -38,14 +38,21 @@ The following environment variables must be set:
 
 ### Running the Example Server
 
-`npm start`
+`DEBUG=* npm start`
 
-This will run the following endpoints on the local host on the `PORT` environment variable, if defined. Defaults to port `9090`.
-
-* `/graphql` - the GraphQL server
-* `/graphiql` - the GraphiQL interface (only available when `NODE_ENV` is not `production`)
+This will run the `/graphql` endpoint on localhost on the `PORT` environment variable, if defined (defaults to `9090`). In non-production environments, the GraphQL Playground interface will run here too.
 
 In-memory caching (see below) is enabled on the example server.
+
+Test query:
+```
+{
+  brewerySearch(q: "Inefficient Prohibitions") {
+    brewery_id
+    brewery_name
+  }
+}
+```
 
 ## User Authentication
 
