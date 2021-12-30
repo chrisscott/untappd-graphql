@@ -13,7 +13,6 @@ if (!process.env.UNTAPPD_CLIENT_ID || !process.env.UNTAPPD_CLIENT_SECRET) {
 }
 
 async function startServer() {
-
   // Cache in memory
   const context = {
     cache: new NodeCache({
@@ -31,10 +30,11 @@ async function startServer() {
   });
 
   const app = express();
+  await server.start();
   server.applyMiddleware({ app });
 
   // Start the server
-  await new Promise(resolve => app.listen({ port }, resolve));
+  await new Promise((resolve) => app.listen({ port }, resolve));
   console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
   debug(`Go to http://localhost:${port}/graphiql to run queries!`);
 }

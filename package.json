@@ -4,7 +4,7 @@
   "description": "GraphQL for the Untappd API",
   "main": "./build/index.js",
   "repository": "git@github.com:chrisscott/untappd-graphql.git",
-  "author": "Chris Scott <i@brew.fyi>",
+  "author": "Chris Scott <i@brewby.app>",
   "license": "MIT",
   "private": false,
   "scripts": {
@@ -16,26 +16,25 @@
     "release": "release-it"
   },
   "dependencies": {
-    "apollo-server-express": "2.25.1",
-    "axios": "0.21.1",
+    "@graphql-tools/schema": "8.3.1",
+    "apollo-server-express": "3.6.0",
+    "axios": "0.24.0",
     "bluebird": "3.7.2",
-    "body-parser": "1.19.0",
-    "debug": "4.3.1",
-    "express": "4.17.1",
-    "graphql": "15.5.0",
-    "graphql-tools": "7.0.5",
+    "body-parser": "1.19.1",
+    "debug": "4.3.3",
+    "express": "4.17.2",
     "node-cache": "5.1.2"
   },
   "devDependencies": {
-    "@babel/cli": "7.14.5",
-    "@babel/core": "7.14.5",
-    "@babel/node": "7.14.5",
-    "@babel/plugin-transform-runtime": "7.14.5",
-    "@babel/preset-env": "7.14.5",
-    "eslint": "7.28.0",
-    "eslint-config-airbnb-base": "14.2.1",
-    "eslint-plugin-import": "2.23.4",
-    "release-it": "14.8.0",
+    "@babel/cli": "7.16.0",
+    "@babel/core": "7.16.5",
+    "@babel/node": "7.16.5",
+    "@babel/plugin-transform-runtime": "7.16.5",
+    "@babel/preset-env": "7.16.5",
+    "eslint": "8.5.0",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-plugin-import": "2.25.3",
+    "release-it": "14.11.8",
     "rimraf": "3.0.2"
   }
 }

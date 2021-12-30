@@ -5,6 +5,12 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+Object.defineProperty(exports, "resolvers", {
+  enumerable: true,
+  get: function () {
+    return _resolvers.default;
+  }
+});
 Object.defineProperty(exports, "schema", {
   enumerable: true,
   get: function () {
@@ -15,12 +21,6 @@ Object.defineProperty(exports, "typeDefs", {
   enumerable: true,
   get: function () {
     return _typeDefs.default;
-  }
-});
-Object.defineProperty(exports, "resolvers", {
-  enumerable: true,
-  get: function () {
-    return _resolvers.default;
   }
 });
 
