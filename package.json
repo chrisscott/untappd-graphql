@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@graphql-tools/schema": "8.3.1",
-    "apollo-server-express": "3.6.0",
-    "axios": "0.24.0",
+    "apollo-server-express": "3.6.2",
+    "axios": "0.25.0",
     "bluebird": "3.7.2",
     "body-parser": "1.19.1",
     "debug": "4.3.3",
@@ -26,15 +26,15 @@
     "node-cache": "5.1.2"
   },
   "devDependencies": {
-    "@babel/cli": "7.16.0",
-    "@babel/core": "7.16.5",
-    "@babel/node": "7.16.5",
-    "@babel/plugin-transform-runtime": "7.16.5",
-    "@babel/preset-env": "7.16.5",
-    "eslint": "8.5.0",
+    "@babel/cli": "7.16.8",
+    "@babel/core": "7.16.12",
+    "@babel/node": "7.16.8",
+    "@babel/plugin-transform-runtime": "7.16.10",
+    "@babel/preset-env": "7.16.11",
+    "eslint": "8.7.0",
     "eslint-config-airbnb-base": "15.0.0",
-    "eslint-plugin-import": "2.25.3",
-    "release-it": "14.11.8",
+    "eslint-plugin-import": "2.25.4",
+    "release-it": "14.12.3",
     "rimraf": "3.0.2"
   }
 }
