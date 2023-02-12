@@ -34,7 +34,7 @@
     "eslint": "8.7.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-plugin-import": "2.25.4",
-    "release-it": "14.12.3",
+    "release-it": "15.6.0",
     "rimraf": "3.0.2"
   }
 }
