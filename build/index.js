@@ -1,7 +1,6 @@
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -23,9 +22,6 @@ Object.defineProperty(exports, "typeDefs", {
     return _typeDefs.default;
   }
 });
-
 var _schema = _interopRequireDefault(require("./api/schema"));
-
 var _typeDefs = _interopRequireDefault(require("./api/typeDefs"));
-
 var _resolvers = _interopRequireDefault(require("./api/resolvers"));
