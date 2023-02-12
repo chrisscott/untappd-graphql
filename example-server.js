@@ -5,6 +5,8 @@ import { schema } from './src';
 
 const debug = require('debug')('untappd-graphql');
 
+debug.enabled = true;
+
 const port = process.env.PORT || 9090;
 
 if (!process.env.UNTAPPD_CLIENT_ID || !process.env.UNTAPPD_CLIENT_SECRET) {
@@ -35,8 +37,7 @@ async function startServer() {
 
   // Start the server
   await new Promise((resolve) => app.listen({ port }, resolve));
-  console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
-  debug(`Go to http://localhost:${port}/graphiql to run queries!`);
+  debug(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
 }
 
 startServer();
