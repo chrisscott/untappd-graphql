@@ -1,5 +1,9 @@
 import express from 'express';
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import http from 'http';
+import cors from 'cors';
+import { json } from 'body-parser';
 import NodeCache from 'node-cache';
 import { schema } from './src';
 
@@ -32,12 +36,19 @@ async function startServer() {
   });
 
   const app = express();
+  const httpServer = http.createServer(app);
   await server.start();
-  server.applyMiddleware({ app });
+  app.use(
+    '/graphql',
+    cors(),
+    json(),
+    expressMiddleware(server),
+  );
 
   // Start the server
-  await new Promise((resolve) => app.listen({ port }, resolve));
-  debug(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
+  // eslint-disable-next-line no-promise-executor-return
+  await new Promise((resolve) => httpServer.listen({ port }, resolve));
+  debug(`🚀 Server ready at http://localhost:${port}/graphql`);
 }
 
 startServer();
