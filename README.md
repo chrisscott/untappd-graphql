@@ -38,7 +38,7 @@ The following environment variables must be set:
 
 ### Running the Example Server
 
-`DEBUG=* npm start`
+`npm start`
 
 This will run the `/graphql` endpoint on localhost on the `PORT` environment variable, if defined (defaults to `9090`). In non-production environments, the GraphQL Playground interface will run here too.
 
@@ -79,4 +79,4 @@ To cache the API results from Untappd pass in a `cache` object as a property of 
 
 __Caching is recommended, especially if using the `brewerySearchInflated` Query since it requires one API call for the search and one for each `Brewery` returned.__
 
-For an example using `node-cache` as an in-memory cache with `apollo-server-express` see [`server.js`](./server.js).
+For an example using `node-cache` as an in-memory cache with `apollo-server-express` see [`example-server.js`](./example-server.js).
