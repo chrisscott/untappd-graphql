@@ -76,5 +76,4 @@ const typeDefs = `
     breweryInfo(id: Int!): Brewery
   }
 `;
-var _default = typeDefs;
-exports.default = _default;
+var _default = exports.default = typeDefs;

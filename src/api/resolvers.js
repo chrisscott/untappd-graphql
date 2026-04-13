@@ -56,7 +56,7 @@ const getResults = (path, args, context) => {
       headers: {'User-Agent': `untappd-graphql (${UNTAPPD_CLIENT_ID})`},
     },
   )
-    .bind(debugApi, debugCache, debugApiVerbose).then((response) => {
+    .then((response) => {
       const { headers, data } = response;
 
       debugApi('x-ratelimit-remaining for %s: %d', rateLimitFor, headers['x-ratelimit-remaining']);

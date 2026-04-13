@@ -12,5 +12,4 @@ const schema = (0, _schema.makeExecutableSchema)({
   typeDefs: _typeDefs.default,
   resolvers: _resolvers.default
 });
-var _default = schema;
-exports.default = _default;
+var _default = exports.default = schema;

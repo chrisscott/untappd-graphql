@@ -1,6 +1,6 @@
 import express from 'express';
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express5';
 import http from 'http';
 import cors from 'cors';
 import { json } from 'body-parser';
@@ -28,10 +28,12 @@ async function startServer() {
 
   const server = new ApolloServer({
     schema,
-    context,
-    formatError: (err) => {
-      const { status, message } = err.originalError;
-      return { status, message };
+    formatError: (formattedError, err) => {
+      if (err && err.originalError) {
+        const { status, message } = err.originalError;
+        return { status, message };
+      }
+      return formattedError;
     },
   });
 
@@ -42,7 +44,9 @@ async function startServer() {
     '/graphql',
     cors(),
     json(),
-    expressMiddleware(server),
+    expressMiddleware(server, {
+      context: async () => context,
+    }),
   );
 
   // Start the server
