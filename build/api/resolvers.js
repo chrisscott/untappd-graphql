@@ -137,5 +137,4 @@ const resolvers = {
     }
   }
 };
-var _default = resolvers;
-exports.default = _default;
+var _default = exports.default = resolvers;
